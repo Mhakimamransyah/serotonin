@@ -33,12 +33,54 @@ type UsersTable struct {
 	Roles     roles.RolesTables `gorm:"foreignKey:RolesId"`
 }
 
+func ConvertUsersToUsersTable(users *users.Users) *UsersTable {
+	return &UsersTable{
+		ID:        users.ID,
+		Name:      users.Name,
+		Email:     users.Email,
+		Username:  users.Username,
+		Password:  users.Password,
+		Phone:     users.Phone,
+		RolesId:   users.RolesId,
+		CreatedAt: users.CreatedAt,
+		UpdatedAt: users.UpdatedAt,
+		DeletedAt: users.DeletedAt,
+	}
+}
+
+func ConvertUserTablesToUsers(user_table *UsersTable) *users.Users {
+	return &users.Users{
+		ID:        user_table.ID,
+		Name:      user_table.Name,
+		Email:     user_table.Email,
+		Phone:     user_table.Phone,
+		Username:  user_table.Username,
+		Password:  user_table.Password,
+		RolesId:   user_table.RolesId,
+		CreatedAt: user_table.CreatedAt,
+		UpdatedAt: user_table.UpdatedAt,
+		DeletedAt: user_table.DeletedAt,
+	}
+}
+
 func (repo *UsersRepository) CreateUser(user *users.Users) error {
+	userTable := ConvertUsersToUsersTable(user)
+	err := repo.DB.Save(userTable).Error
+	if err != nil {
+		return err
+	}
 	return nil
 }
+
 func (repo *UsersRepository) Login(username, password string) (*users.Users, error) {
-	return nil, nil
+	user_table := UsersTable{}
+	err := repo.DB.Where("username = ?", username).First(&user_table).Error
+	if err != nil {
+		return nil, err
+	}
+	return ConvertUserTablesToUsers(&user_table), nil
 }
+
 func (repo *UsersRepository) Get(username string) (*users.Users, error) {
 	return nil, nil
 }

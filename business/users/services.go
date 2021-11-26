@@ -1,5 +1,12 @@
 package users
 
+import (
+	"errors"
+	"serotonin/business"
+	"serotonin/util/hashing"
+	"serotonin/util/validator"
+)
+
 type UserService struct {
 	User_repo Repository
 }
@@ -11,19 +18,36 @@ func InitUserService(repository Repository) *UserService {
 }
 
 type UsersSpec struct {
-	Name     string `validate:"required"`
-	Email    string `validate:"required,email"`
-	Username string `validate:"required"`
-	Password string `validate:"required"`
-	Phone    string `validate:"required"`
+	Name     string `form:"name" validate:"required"`
+	Email    string `form:"email" validate:"required,email"`
+	Username string `form:"username" validate:"required"`
+	Password string `form:"password" validate:"required"`
+	Phone    string `form:"phone" validate:"required"`
+	RoleId   int    `form:"role_id" validate:"required"`
 }
 
 func (service *UserService) RegistersNewUser(users *UsersSpec) error {
+	err := validator.GetValidator().Struct(users)
+	if err != nil {
+		return business.ErrInvalidSpec
+	}
+	err = service.User_repo.CreateUser(NewUser(users))
+	if err != nil {
+		return errors.New("Register Failed")
+	}
 	return nil
 }
 
 func (service *UserService) Login(username, password string) (*Users, error) {
-	return nil, nil
+	user, err := service.User_repo.Login(username, password)
+	if err != nil {
+		return nil, err
+	}
+	if hashing.CompareHash(password, user.Password) {
+		return user, nil
+	} else {
+		return nil, business.ErrLogin
+	}
 }
 
 func (service *UserService) GetUser(username string) (*Users, error) {
