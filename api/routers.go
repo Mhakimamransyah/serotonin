@@ -2,15 +2,18 @@ package api
 
 import (
 	"net/http"
-	ControllersUser "serotonin/api/v1/controllers/users"
+	"serotonin/api/middleware/apikey"
+	"serotonin/api/v1/controllers/pilgan"
 
 	"github.com/labstack/echo/v4"
 )
 
-func RegisterPath(e *echo.Echo, userController *ControllersUser.UsersController) {
-	user := e.Group("v1/users")
-	user.POST("/login", userController.Login)
-	user.POST("/", userController.Register)
+func RegisterPath(e *echo.Echo, pilgan_controller *pilgan.PilganController) {
+
+	pilgan := e.Group("/v1/pilgan")
+	pilgan.Use(apikey.ApiKey())
+	pilgan.GET("", pilgan_controller.GetDataUjianPilganController)
+
 	e.GET("/", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]interface{}{
 			"message": "OK",

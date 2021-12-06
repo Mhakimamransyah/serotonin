@@ -7,21 +7,48 @@ import (
 	"os"
 	"os/signal"
 	Api "serotonin/api"
-	ControllersUser "serotonin/api/v1/controllers/users"
-	ServiceUser "serotonin/business/users"
+	ControllerPilgan "serotonin/api/v1/controllers/pilgan"
+	ServiceMessaging "serotonin/business/messaging"
+	ServicePilgan "serotonin/business/pilgan"
 	"serotonin/config"
+	Worker "serotonin/cron"
+	"serotonin/cron/tasks"
 	"serotonin/migrations"
-	RepositoryUser "serotonin/repositories/users"
+	RepositoryMessaging "serotonin/repositories/messaging"
+	RepositoryPilgan "serotonin/repositories/pilgan"
 	"strconv"
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"github.com/streadway/amqp"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
-func initMongoDb() {
-
+func initMongoDb(appconfig *config.AppConfig) (*mongo.Database, context.Context) {
+	var ctx = context.Background()
+	configDB := map[string]string{
+		"DB_Collection": appconfig.MongoCollection,
+		"DB_Port":       strconv.Itoa(appconfig.MongoPort),
+		"DB_Host":       appconfig.MongoHost,
+		"DB_Username":   appconfig.MongoUsername,
+		"DB_Password":   appconfig.MongoPassword,
+	}
+	fmt.Println(configDB)
+	connectionString := fmt.Sprintf("mongodb://%s:%s@%s:%s", configDB["DB_Username"], configDB["DB_Password"], configDB["DB_Host"], configDB["DB_Port"])
+	clientOptions := options.Client()
+	clientOptions.ApplyURI(connectionString)
+	client, err := mongo.NewClient(clientOptions)
+	if err != nil {
+		panic(err)
+	}
+	err = client.Connect(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return client.Database(configDB["DB_Collection"]), ctx
 }
 
 func initDatabaseMysql(appconfig *config.AppConfig) *gorm.DB {
@@ -50,17 +77,42 @@ func initDatabaseMysql(appconfig *config.AppConfig) *gorm.DB {
 	return db
 }
 
+func initMessaging(appconfig *config.AppConfig) *amqp.Channel {
+	connectionString := fmt.Sprintf("amqp://%s:%s@%s:%d/", appconfig.MsgBrokerUsername, appconfig.MsgBrokerPassword,
+		appconfig.MsgBrokerHost, appconfig.MsgBrokerPort)
+	conn, err := amqp.Dial(connectionString)
+	if err != nil {
+		panic(err)
+	}
+	ch, err := conn.Channel()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Messaging connect")
+	return ch
+}
+
 func main() {
 	config := config.GetConfig()
-	db := initDatabaseMysql(config)
+	// db := initDatabaseMysql(config)
+	client, ctx := initMongoDb(config)
+	channel := initMessaging(config)
 
-	userRepository := RepositoryUser.InitRepository(db)
-	userService := ServiceUser.InitUserService(userRepository)
-	userController := ControllersUser.InitUserController(userService)
+	messagingRepository := RepositoryMessaging.InitMessagingRepository(channel)
+	messagingService := ServiceMessaging.InitMessagingService(messagingRepository)
+
+	pilganRepository := RepositoryPilgan.InitPilganRepository(client, &ctx, "siswa_pilgan")
+	servicePilgan := ServicePilgan.InitPilganService(pilganRepository, *messagingRepository)
+	pilganController := ControllerPilgan.InitPilganController(servicePilgan)
+
+	task := tasks.InitTask(messagingService)
+
+	Worker.StartCron(config.CronDate, task.Init_signal)
+	Worker.InitConsumer("transfer_ujian", channel).StartConsumer(servicePilgan)
 
 	e := echo.New()
 
-	Api.RegisterPath(e, userController)
+	Api.RegisterPath(e, pilganController)
 
 	go func() {
 		address := fmt.Sprintf(":%d", config.AppPort)

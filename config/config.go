@@ -10,13 +10,24 @@ import (
 
 //AppConfig Application configuration
 type AppConfig struct {
-	AppPort    int    `mapstructure:"app_port"`
-	DbDriver   string `mapstructure:"db_mysql_driver"`
-	DbHost     string `mapstructure:"db_mysql_host"`
-	DbPort     int    `mapstructure:"db_mysql_port"`
-	DbUsername string `mapstructure:"db_mysql_username"`
-	DbPassword string `mapstructure:"db_mysql_password"`
-	DbName     string `mapstructure:"db_mysql_name"`
+	AppPort           int    `mapstructure:"app_port"`
+	DbDriver          string `mapstructure:"db_mysql_driver"`
+	DbHost            string `mapstructure:"db_mysql_host"`
+	DbPort            int    `mapstructure:"db_mysql_port"`
+	DbUsername        string `mapstructure:"db_mysql_username"`
+	DbPassword        string `mapstructure:"db_mysql_password"`
+	DbName            string `mapstructure:"db_mysql_name"`
+	MongoDriver       string `mapstructure:"db_mongodb_driver"`
+	MongoUsername     string `mapstructure:"db_mongodb_username"`
+	MongoPassword     string `mapstructure:"db_mongodb_password"`
+	MongoPort         int    `mapstructure:"db_mongodb_port"`
+	MongoHost         string `mapstructure:"db_mongodb_host"`
+	MongoCollection   string `mapstructure:"db_mongodb_collection"`
+	CronDate          string `mapstructure:"cron_start"`
+	MsgBrokerPort     int    `mapstructure:"message_broker_port"`
+	MsgBrokerHost     string `mapstructure:"message_broker_host"`
+	MsgBrokerUsername string `mapstructure:"message_broker_username"`
+	MsgBrokerPassword string `mapstructure:"message_broker_password"`
 }
 
 var lock = &sync.Mutex{}
@@ -65,6 +76,18 @@ func initConfig() *AppConfig {
 	viper.BindEnv("db_mysql_username")
 	viper.BindEnv("db_mysql_password")
 	viper.BindEnv("db_mysql_name")
+	viper.BindEnv("db_mongodb_driver")
+	viper.BindEnv("db_mongodb_username")
+	viper.BindEnv("db_mongodb_password")
+	viper.BindEnv("db_mongodb_port")
+	viper.BindEnv("db_mongodb_host")
+	viper.BindEnv("db_mongodb_collection")
+	viper.BindEnv("cron_start")
+	viper.BindEnv("message_broker_port")
+	viper.BindEnv("message_broker_host")
+	viper.BindEnv("message_broker_username")
+	viper.BindEnv("message_broker_password")
+	viper.BindEnv("key")
 	// viper.ReadInConfig()
 
 	err := viper.Unmarshal(&finalConfig)
@@ -72,6 +95,5 @@ func initConfig() *AppConfig {
 		log.Info("failed to extract config, will use default value")
 		return &defaultConfig
 	}
-
 	return &finalConfig
 }

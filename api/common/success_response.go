@@ -1,6 +1,8 @@
 package common
 
-import "net/http"
+import (
+	"net/http"
+)
 
 type SuccessResponseCode string
 
@@ -13,6 +15,22 @@ const (
 type SuccessResponse struct {
 	Message string      `json:"message"`
 	Data    interface{} `json:"data"`
+}
+
+type SuccessGetData struct {
+	Message string      `json:"message"`
+	Count   int         `json:"total"`
+	Data    interface{} `json:"data"`
+	Query   interface{} `json:"query"`
+}
+
+func NewSuccessResponseGetData(data interface{}, query interface{}, count int) (int, SuccessGetData) {
+	return http.StatusOK, SuccessGetData{
+		"Success",
+		count,
+		data,
+		query,
+	}
 }
 
 //NewSuccessResponse create new success payload
