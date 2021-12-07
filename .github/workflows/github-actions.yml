@@ -59,7 +59,7 @@ jobs:
             docker stop serotonin_apps
             docker rm serotonin_apps
             docker pull mhakim/serotonin:1.0
-            docker run -d -p 8002:8002 -v ./log-serotonin:/log-serotonin --name serotonin_apps mhakim/serotonin:1.0
+            docker run -d -p 8002:8002 -v log_serotonin:/log_serotonin/ --name serotonin_apps mhakim/serotonin:1.0
             sleep 5s
             docker images
             docker container ps -a 
