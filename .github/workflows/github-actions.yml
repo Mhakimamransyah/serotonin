@@ -44,14 +44,16 @@ jobs:
     runs-on: ubuntu-18.04
     needs: jobs-2
     steps:
-      - uses: appleboy/ssh-action@master
       - name: setup server
+        uses: appleboy/ssh-action@master
         with:
           SSH_USER: ${{secrets.USERNAME}}
           SSH_KEY: ${{secrets.SSH_KEY}}
           SSH_HOST: ${{secrets.HOST}}
           SSH_PORT: ${{secrets.PORT}}
-          script: whoami 
+          script: | 
+            whoami 
+            ls -al
      
 
 
