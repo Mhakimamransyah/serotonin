@@ -8,7 +8,7 @@ jobs:
    
    jobs-1:
      name: run unit test
-     runs-on: ubuntu-18.04
+     runs-on: ubuntu-latest
      steps:
      - uses: action/checkout@v2
      - name: setup-golang
@@ -20,7 +20,7 @@ jobs:
    
    jobs-2:
       name: build image and push to docker hub
-      runs-on: ubuntu-18.04
+      runs-on: ubuntu-latest
       needs: jobs-1 
       steps:
         - uses: action/checkjout@v2
@@ -31,6 +31,7 @@ jobs:
             echo "$CONFIG" > ./config/.env 
         - name: build image
           run: docker build -t mhakim/serotonin:1.0
+        - name: login to docker hub
           uses: docker/login-action@v1
           with: 
             username: ${{secrets.DOCKER_USERNAME}}
