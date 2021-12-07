@@ -30,7 +30,7 @@ jobs:
           run: |
             echo "$CONFIG" > ./config/.env 
         - name: build image
-          run: docker build -t mhakim/serotonin:1.0
+          run: docker build -t mhakim/serotonin:1.0 .
         - name: login to docker hub
           uses: docker/login-action@v1
           with: 
