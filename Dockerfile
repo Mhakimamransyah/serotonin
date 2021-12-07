@@ -13,6 +13,7 @@ RUN mkdir /config
 WORKDIR /root/config
 COPY --from=builder /projects/config/.env .
 WORKDIR /root/
+RUN mkdir /log_serotonin
 COPY --from=builder /projects/app/apps .
 EXPOSE 8002
 CMD ["./apps"]

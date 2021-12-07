@@ -14,7 +14,7 @@ var logging *logrus.Logger
 func GetLogger(filename string) *logrus.Logger {
 	lock.Lock()
 	defer lock.Unlock()
-	file, err := os.OpenFile("logs/"+filename, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
+	file, err := os.OpenFile("log_serotonin/"+filename, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
 	if err != nil {
 		log.Printf("%s", err)
 	}
