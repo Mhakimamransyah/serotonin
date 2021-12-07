@@ -47,10 +47,10 @@ jobs:
       - name: setup server
         uses: appleboy/ssh-action@master
         with:
-          SSH_USER: ${{secrets.USERNAME}}
-          SSH_KEY: ${{secrets.SSH_KEY}}
-          SSH_HOST: ${{secrets.HOST}}
-          SSH_PORT: ${{secrets.PORT}}
+          username: ${{secrets.USERNAME}}
+          key: ${{secrets.SSH_KEY}}
+          host: ${{secrets.HOST}}
+          port: ${{secrets.PORT}}
           script: | 
             whoami 
             ls -al
