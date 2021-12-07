@@ -1,7 +1,6 @@
 package logging
 
 import (
-	"fmt"
 	"os"
 	"sync"
 
@@ -19,14 +18,7 @@ func GetLogger(filename string) *logrus.Logger {
 	if err != nil {
 		log.Printf("%s", err)
 	}
-	fmt.Println(file.Name())
-	fmt.Println(file)
-	fmt.Println(os.Environ())
-	path, err := os.Getwd()
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(path)
+
 	if logging == nil {
 		logging = logrus.New()
 	}
