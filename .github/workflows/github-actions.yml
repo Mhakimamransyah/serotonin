@@ -23,7 +23,7 @@ jobs:
       runs-on: ubuntu-latest
       needs: jobs-1 
       steps:
-        - uses: actions/checkjout@v2
+        - uses: actions/checkout@v2
         - name: generate config file
           env:
             CONFIG: ${{secrets.CONFIG_APP}}
