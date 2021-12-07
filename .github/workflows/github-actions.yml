@@ -8,7 +8,7 @@ jobs:
    
    jobs-1:
      name: run unit test
-     runs-on: ubuntu-latest
+     runs-on: ubuntu-18.04
      steps:
      - uses: actions/checkout@v2
      - name: setup-golang
@@ -20,10 +20,10 @@ jobs:
    
    jobs-2:
       name: build image and push to docker hub
-      runs-on: ubuntu-latest
+      runs-on: ubuntu-18.04
       needs: jobs-1 
       steps:
-        - uses: actions/checkjout@v2
+        - uses: actions/checkout@v2
         - name: generate config file
           env:
             CONFIG: ${{secrets.CONFIG_APP}}
@@ -38,6 +38,21 @@ jobs:
             password: ${{secrets.DOCKER_PASSWORD}}
         - name: push to docker hub
           run: docker push mhakim/serotonin:1.0
+
+   jobs-3:
+    name: Deploy to server
+    runs-on: ubuntu-18.04
+    needs: jobs-2
+    steps:
+      - uses: actions/checkout@v2
+      - name: setup server
+        env:
+          SSH_USER: ${{secrets.USERNAME}}
+          SSH_KEY: ${{secrets.SSH_KEY}}
+          SSH_HOST: ${{secrets.HOST}}
+          SSH_PORT: ${{secrets.PORT}}
+        run: docker stop serotonin_apps && docker rm serotonin_apps && docker rmi mhakim:serotonin:1.0 && docker pull mhakim/serotonin:1.0 && docker run -d -p 8002:8002 --name=serotonin_apps mhakim/serotonin:1.0 
+           
 
 
           
