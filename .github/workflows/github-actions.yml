@@ -51,12 +51,17 @@ jobs:
           password: ${{secrets.PASSWORD}}
           host: ${{secrets.HOST}}
           port: ${{secrets.PORT}}
+          sync: false
+          script_stop: true
           script: |  
             docker images
+            docker container ps -a
             docker stop serotonin_apps
             docker rm serotonin_apps
             docker pull mhakim/serotonin:1.0
             docker run -d -p 8002:8002 --name serotonin_apps mhakim/serotonin:1.0
+            sleep 5s
+            docker images
             docker container ps -a 
      
 
